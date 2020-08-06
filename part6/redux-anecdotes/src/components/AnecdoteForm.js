@@ -5,6 +5,11 @@ import {
   createNewAnecdoteActionCreator
 } from '../reducers/anecdoteReducer'
 
+import {
+  createNotificationActionCreator,
+   removeNotificationActionCreator
+} from '../reducers/notificationReducer'
+
 const AnecdoteForm = () => {
   const dispatch = useDispatch()
 
@@ -12,7 +17,13 @@ const AnecdoteForm = () => {
     event.preventDefault()
     const value = event.target.anecdote.value
     event.target.anecdote.value = ''
+
     dispatch(createNewAnecdoteActionCreator(value))
+    dispatch(createNotificationActionCreator(`you created '${value}'`))
+
+    setTimeout(() => {
+      dispatch(removeNotificationActionCreator(null))
+    }, 5000)
   }
 
   return (
