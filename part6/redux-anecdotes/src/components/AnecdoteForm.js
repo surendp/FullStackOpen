@@ -6,8 +6,7 @@ import {
 } from '../reducers/anecdoteReducer'
 
 import {
-  createNotificationActionCreator,
-   removeNotificationActionCreator
+  setNotificationActionCreator
 } from '../reducers/notificationReducer'
 
 const AnecdoteForm = () => {
@@ -19,11 +18,7 @@ const AnecdoteForm = () => {
     event.target.anecdote.value = ''
 
     dispatch(createNewAnecdoteActionCreator(value))
-    dispatch(createNotificationActionCreator(`you created '${value}'`))
-
-    setTimeout(() => {
-      dispatch(removeNotificationActionCreator(null))
-    }, 5000)
+    dispatch(setNotificationActionCreator(`you created '${value}'`, 5))
   }
 
   return (

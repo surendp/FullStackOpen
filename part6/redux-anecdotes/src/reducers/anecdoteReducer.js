@@ -1,68 +1,94 @@
-const anecdotesAtStart = [
-  'If it hurts, do it more often',
-  'Adding manpower to a late software project makes it later!',
-  'The first 90 percent of the code accounts for the first 90 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
-  'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
-  'Premature optimization is the root of all evil.',
-  'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.'
-]
-
-const getId = () => (100000 * Math.random()).toFixed(0)
-
-const asObject = (anecdote) => {
-  return {
-    content: anecdote,
-    id: getId(),
-    votes: 0
-  }
-}
-
-const initialState = anecdotesAtStart.map(asObject)
+import anecdoteService from '../services/anecdotes'
 
 // action types
+const FETCH_ALL_ANECDOTES = 'FETCH_ALL_ANECDOTES'
 const VOTE = 'VOTE'
 const CREATE_NEW_ANECDOTE = 'CREATE_NEW_ANECDOTE'
 
 // action creators
-const voteActionCreator = id => ({
-  type: VOTE,
-  payload: {
-    id
+const voteActionCreator = id => {
+  return async (dispatch, getState) => {
+    // extract the anecdote to be updated
+    const updateAnecdote = getState()
+      .anecdotes
+      .find(anecdote => anecdote.id === id)
+    
+    // update the anecdote and call to update
+    const anecdote = await anecdoteService
+      .update({
+        ...updateAnecdote,
+        votes: updateAnecdote.votes + 1
+      })
+  
+    // dispatch the updated anecdote to redux store
+    dispatch({
+      type: VOTE,
+      payload: {
+        anecdote
+      }
+    })
   }
-})
+}
 
-const createNewAnecdoteActionCreator = anecdote => ({
-  type: CREATE_NEW_ANECDOTE,
-  payload: {
-    content: anecdote
+const createNewAnecdoteActionCreator = content => {
+  return async dispatch => {
+    const anecdote = await anecdoteService
+      .createAnecdote({
+        content,
+        votes: 0
+      })
+
+    dispatch({
+      type: CREATE_NEW_ANECDOTE,
+      payload: {
+        anecdote
+      }
+    })
   }
-})
+}
+
+const fetchAllAnecdotesActionCreator = () => {
+  return async (dispatch) => {
+    const anecdotes = await anecdoteService
+      .getAll()
+
+    dispatch({
+      type: FETCH_ALL_ANECDOTES,
+      payload: {
+        anecdotes
+      }
+    })
+  }
+}
 
 //case-handlers
 const voteAnecdote = (state, payload) => {
-  const { id } = payload
-  return state.map(anecdote => {
-    if (anecdote.id === id) {
+  const { anecdote } = payload
+  return state.map(anec => {
+    if (anec.id === anecdote.id) {
       return {
         ...anecdote,
-        votes: anecdote.votes + 1
       }
     }
 
-    return anecdote
+    return anec
   })
 }
 
 const createNewAnecdote = (state, payload) => {
-  const { content } = payload
+  const { anecdote } = payload
   return [
     ...state,
-    asObject(content)
+    anecdote
   ]
 }
 
+const fetchAllAnecdotes = (state, payload) => ([
+  ...payload.anecdotes
+])
+
 // reducer
-const reducer = (state = initialState, action) => {
+const reducer = (state = [], action) => {
   let newState = [
     ...state
   ]
@@ -76,6 +102,10 @@ const reducer = (state = initialState, action) => {
       newState = createNewAnecdote(state, action.payload)
       break
 
+    case FETCH_ALL_ANECDOTES:
+      newState = fetchAllAnecdotes(state, action.payload)
+      break
+
     default:
       break
   }
@@ -85,7 +115,8 @@ const reducer = (state = initialState, action) => {
 
 export {
   voteActionCreator,
-  createNewAnecdoteActionCreator
+  createNewAnecdoteActionCreator,
+  fetchAllAnecdotesActionCreator
 }
 
 export default reducer

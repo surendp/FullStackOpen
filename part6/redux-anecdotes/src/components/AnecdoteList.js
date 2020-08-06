@@ -10,8 +10,7 @@ import {
 } from '../reducers/anecdoteReducer'
 
 import {
-  createNotificationActionCreator,
-  removeNotificationActionCreator
+  setNotificationActionCreator
 } from '../reducers/notificationReducer'
 
 const Anecdote = ({
@@ -59,11 +58,7 @@ const AnecdoteList = () => {
       .find(anecdote => anecdote.id === id)
   
     dispatch(voteActionCreator(id))
-    dispatch(createNotificationActionCreator(`you voted '${anecdote.content}'`))
-
-    setTimeout(() => {
-      dispatch(removeNotificationActionCreator())
-    }, 5000)
+    dispatch(setNotificationActionCreator(`you voted '${anecdote.content}'`, 5))
   }
 
   const orderedAnecdotes = anecdotes => anecdotes.sort(
