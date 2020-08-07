@@ -1,6 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { useDispatch, useSelector } from 'react-redux'
+import {
+  connect,
+} from 'react-redux'
 
 import Notification from './Notification'
 import Filter from './Filter'
@@ -41,24 +43,15 @@ Anecdote.propTypes = {
   vote: PropTypes.func.isRequired
 }
 
-const AnecdoteList = () => {
-  const dispatch = useDispatch()
-  const anecdotes = useSelector(state => {
-    if (!state.filter) {
-      return state.anecdotes
-    }
-
-    return state.anecdotes.filter(
-      anecdote => anecdote.content.includes(state.filter)
-    )
-  })
+const AnecdoteList = props => {
+  const { anecdotes, ...more } = props
 
   const vote = id => {
     const anecdote = anecdotes
       .find(anecdote => anecdote.id === id)
   
-    dispatch(voteActionCreator(id))
-    dispatch(setNotificationActionCreator(`you voted '${anecdote.content}'`, 5))
+    more.voteActionCreator(id)
+    more.setNotificationActionCreator(`you voted '${anecdote.content}'`, 5)
   }
 
   const orderedAnecdotes = anecdotes => anecdotes.sort(
@@ -73,6 +66,7 @@ const AnecdoteList = () => {
       {orderedAnecdotes(anecdotes)
         .map(anecdote => (
           <Anecdote
+            key={anecdote.id}
             anecdote={anecdote}
             vote={vote}
           />
@@ -82,4 +76,30 @@ const AnecdoteList = () => {
   )
 }
 
-export default AnecdoteList
+const mapStateToProps = ({
+  filter,
+  anecdotes
+}) => {
+  if (!filter) {
+    return {
+      anecdotes
+    }
+  }
+
+  return {
+    anecdotes: anecdotes.filter(
+      anecdote => anecdote.content.includes(filter)
+    )
+  }
+}
+
+const mapDispatchToProps = dispatch => ({
+  voteActionCreator: value => {
+    dispatch(voteActionCreator(value))
+  },
+  setNotificationActionCreator: value => {
+    dispatch(setNotificationActionCreator(value))
+  }
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(AnecdoteList)
