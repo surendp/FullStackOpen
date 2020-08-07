@@ -97,8 +97,8 @@ const mapDispatchToProps = dispatch => ({
   voteActionCreator: value => {
     dispatch(voteActionCreator(value))
   },
-  setNotificationActionCreator: value => {
-    dispatch(setNotificationActionCreator(value))
+  setNotificationActionCreator: (...values) => {
+    dispatch(setNotificationActionCreator(...values))
   }
 })
 

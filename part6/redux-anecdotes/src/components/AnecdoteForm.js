@@ -40,8 +40,8 @@ const mapDispatchToProps = dispatch => ({
   createNewAnecdoteActionCreator: value => {
     dispatch(createNewAnecdoteActionCreator(value))
   },
-  setNotificationActionCreator: value => {
-    dispatch(setNotificationActionCreator(value))
+  setNotificationActionCreator: (...value) => {
+    dispatch(setNotificationActionCreator(...value))
   }
 })
 

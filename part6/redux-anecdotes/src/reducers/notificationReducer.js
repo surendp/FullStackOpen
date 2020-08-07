@@ -1,14 +1,30 @@
+import {
+  setTimeoutIdActionCreator,
+  removeTimeoutIdActionCreator
+} from "./notificationTimeoutReducer"
+
 // action types
 const CREATE_NOTIFICATION = 'CREATE_NOTIFICATION'
 const REMOVE_NOTIFICATION = 'REMOVE_NOTIFICATION'
 
 // action creators
 const setNotificationActionCreator = (notification, timeInSeconds) => {
-  return dispatch => {
+  return (dispatch, getState) => {
     dispatch(createNotificationActionCreator(notification))
-    setTimeout(() => {
+
+    // if a timeout is already set, clear the timeout
+    if (getState().notificationTimeoutId) {
+      clearTimeout(getState().notificationTimeoutId)
+    }
+
+    // set new time out to remove new notification
+    const notificationTimeoutId = setTimeout(() => {
       dispatch(removeNotificationActionCreator())
+      dispatch(removeTimeoutIdActionCreator())
     }, timeInSeconds * 1000)
+
+    // save the notificationTimeoutId
+    dispatch(setTimeoutIdActionCreator(notificationTimeoutId))
   }
 }
 
