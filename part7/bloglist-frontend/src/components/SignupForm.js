@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Container,
   Table,
@@ -12,11 +12,12 @@ import Notification from './Notification'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
-  loginActionCreator
+  signupActionCreator
 } from '../reducers/authenticationReducer'
+
 import CustomFormField from './CustomFormField'
 import { makeStyles } from '@material-ui/styles'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 
 const useStyles = makeStyles({
   root: {
@@ -47,30 +48,39 @@ const useStyles = makeStyles({
     marginTop: '8px'
   },
 
-  loginButton: {
+  signupButton: {
     alignSelf: 'center',
     flexGrow: 1,
     marginBottom: '8px'
   },
 
-  signupButton: {
+  loginButton: {
     marginBottom: '32px',
     textAlign: 'center'
   }
 })
 
-const LoginForm = () => {
+const SignupForm = () => {
   const classes = useStyles()
+  const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const dispatch = useDispatch()
+  const history = useHistory()
+  const authentication = useSelector(state => state.authentication)
   const notification = useSelector(state => state.notification)
 
-  const handleLogin = async event => {
+  useEffect(() => {
+    if (authentication.user) {
+      history.push('/')
+    }
+  }, [authentication.user])
+  const handleSignup = async event => {
     event.preventDefault()
-    dispatch(loginActionCreator(username, password))
+    dispatch(signupActionCreator(name, username, password))
     setUsername('')
     setPassword('')
+    setName('')
   }
 
   return (
@@ -78,13 +88,13 @@ const LoginForm = () => {
       <Paper
         component="form"
         className={classes.form}
-        onSubmit={handleLogin}
+        onSubmit={handleSignup}
       >
         <Typography
           variant="h4"
           className={classes.formHeading}
         >
-          {'Log in to application'}
+          {'Register to application'}
         </Typography>
         <Divider />
         {
@@ -99,6 +109,14 @@ const LoginForm = () => {
         }
         <Table className={classes.table}>
           <TableBody>
+            <CustomFormField
+              id="name"
+              label="Name"
+              variant="outlined"
+              size="small"
+              value={name}
+              onChange={({ target }) => setName(target.value)}
+            />
             <CustomFormField
               id="username"
               label="username"
@@ -119,18 +137,8 @@ const LoginForm = () => {
           </TableBody>
         </Table>
         <Button
-          id="login-button"
+          id="signup-button"
           type="submit"
-          variant="outlined"
-          color='inherit'
-          className={classes.loginButton}
-          fullWidth
-        >
-          {'login'}
-        </Button>
-        <Button
-          component={Link}
-          to='/signup'
           variant="outlined"
           color='inherit'
           className={classes.signupButton}
@@ -138,9 +146,19 @@ const LoginForm = () => {
         >
           {'Signup'}
         </Button>
+        <Button
+          component={Link}
+          to='/'
+          variant="outlined"
+          color='inherit'
+          className={classes.loginButton}
+          fullWidth
+        >
+          {'Login'}
+        </Button>
       </Paper>
     </Container>
   )
 }
 
-export default LoginForm
+export default SignupForm

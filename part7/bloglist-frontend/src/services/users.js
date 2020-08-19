@@ -11,7 +11,17 @@ const getOne = userId => {
   return request.then(response => response.data)
 }
 
+const create = (name, username, password) => {
+  const request = axios.post(baseUrl, {
+    name,
+    username,
+    password
+  })
+  return request.then(response => response.data)
+}
+
 export default {
   getAll,
   getOne,
+  create
 }

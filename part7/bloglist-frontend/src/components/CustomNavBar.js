@@ -56,7 +56,7 @@ const CustomNavBar = () => {
           {
             user ? loggedInContent() : (
               <Typography className={classes.typography}>
-                {'Log in to Blog App'}
+                {'BLOG APP'}
               </Typography>
             )
           }

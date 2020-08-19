@@ -1,5 +1,6 @@
 import loginService from '../services/login'
 import blogService from '../services/blogs'
+import userService from '../services/users'
 import {
   notificationActionCreator
 } from './notificationReducer'
@@ -46,6 +47,32 @@ const logoutActionCreator = () => {
   }
 }
 
+const signupActionCreator = (name, username, password) => {
+  return async dispatch => {
+    try {
+      // register new user in the application
+      await userService
+        .create(name, username, password)
+
+      // login to the application
+      const user = await loginService.login({
+        username, password
+      })
+      window.localStorage.setItem(
+        'loggedBlogAppUser', JSON.stringify(user)
+      )
+      blogService.setToken(user.token)
+      dispatch(setUserActionCreator(user))
+    } catch (error) {
+      dispatch(notificationActionCreator(
+        error.response.data.error,
+        true,
+        5
+      ))
+    }
+  }
+}
+
 //default state
 const defaultState = {
   user: null
@@ -82,7 +109,8 @@ export {
   setUserActionCreator,
   removeUserActionCreator,
   loginActionCreator,
-  logoutActionCreator
+  logoutActionCreator,
+  signupActionCreator
 }
 
 export default authenticationReducer

@@ -17,6 +17,7 @@ import blogService from './services/blogs'
 import {
   setUserActionCreator,
 } from './reducers/authenticationReducer'
+import SignupForm from './components/SignupForm'
 
 const useStyles = makeStyles({
   heading: {
@@ -75,6 +76,9 @@ const App = () => {
         </Route>
         <Route path="/blogs/:id">
           <Blog />
+        </Route>
+        <Route path="/signup">
+          <SignupForm />
         </Route>
         <Route path="/">
           {user ? null : <LoginForm />}

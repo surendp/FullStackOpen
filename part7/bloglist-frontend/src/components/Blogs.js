@@ -31,7 +31,7 @@ const Blogs = () => {
 
   useEffect(() => {
     dispatch(fetchBlogsActionCreator())
-  })
+  }, [])
 
   if (!blogs) {
     return null
