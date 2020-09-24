@@ -49,8 +49,8 @@ const BirthYearForm = ({
             {
               authors.map((a, i) => {
                 return i === 0
-                  ? <option value="">select</option>
-                  : <option value={a.name}>{a.name}</option>
+                  ? <option key={i} value="">select</option>
+                  : <option key={`key${a.name}`} value={a.name}>{a.name}</option>
               })
             }
           </select>

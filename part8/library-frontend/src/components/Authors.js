@@ -4,7 +4,8 @@ import BirthYearForm from './BirthYearForm'
 const Authors = ({
   show,
   authors,
-  setError
+  setError,
+  authenticated
 }) => {
   if (!show) {
     return null
@@ -16,7 +17,8 @@ const Authors = ({
       <table>
         <tbody>
           <tr>
-            <th></th>
+            <th>
+            </th>
             <th>
               born
             </th>
@@ -34,10 +36,16 @@ const Authors = ({
         </tbody>
       </table>
 
-      <BirthYearForm
-        setError={setError}
-        authors={authors}
-      />
+      {
+        authenticated
+          ? (
+              <BirthYearForm
+                setError={setError}
+                authors={authors}
+              />
+            )
+          : null
+      }
     </div>
   )
 }
