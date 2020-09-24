@@ -1,4 +1,4 @@
-import { useQuery } from '@apollo/client'
+import { useApolloClient, useQuery } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
 import Authors from './components/Authors'
 import Books from './components/Books'
@@ -15,6 +15,7 @@ const App = () => {
   const [page, setPage] = useState('authors')
   const allAuthorsResult = useQuery(ALL_AUTHORS)
   const allBooksResult = useQuery(ALL_BOOKS)
+  const client = useApolloClient()
 
   // effect hook
   useEffect(() => {
@@ -44,6 +45,7 @@ const App = () => {
     setToken(null)
     localStorage.clear()
     setPage('books')
+    client.resetStore()
   }
 
   return (
@@ -88,9 +90,14 @@ const App = () => {
         setError={notify}
       />
 
-      <Recommend
-        show={page === 'recommend'}
-      />
+      {
+        token
+          ? (<Recommend
+              show={page === 'recommend'}
+            />)
+          : null
+      }
+      
     </div>
   )
 }
