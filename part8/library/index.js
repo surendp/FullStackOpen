@@ -105,7 +105,14 @@ const resolvers = {
       const authors = await Author.find({})
       return authors.length
     },
-    allBooks: async () => {
+    allBooks: async (root, args) => {
+      if (args.genre) {
+        // return the books list by genre
+        return await Book.find({
+          genres: { $eq: args.genre }
+        }).populate('author')
+      }
+
       const books = await Book.find({})
         .populate('author')
       return books

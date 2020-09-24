@@ -90,7 +90,6 @@ const App = () => {
 
       <Recommend
         show={page === 'recommend'}
-        books={allBooksResult.data.allBooks}
       />
     </div>
   )

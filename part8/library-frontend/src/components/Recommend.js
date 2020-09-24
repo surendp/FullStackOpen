@@ -1,23 +1,43 @@
-import { useQuery } from '@apollo/client'
-import React from 'react'
-import { ME } from '../queries'
+import { useLazyQuery, useQuery } from '@apollo/client'
+import React, { useEffect, useState } from 'react'
+import { ALL_BOOKS, ME } from '../queries'
 import Book from './Book'
 
 const Recommend = ({
-  show,
-  books
+  show
 }) => {
-  const me = useQuery(ME)
+  const myInfo = useQuery(ME)
+  const [getBooks, result] = useLazyQuery(ALL_BOOKS)
+  const [recommendedBooks, setRecommendedBooks] = useState(null)
+
+  // effect hook
+  useEffect(() => {
+    // get all books filtered by favorite genre
+    if (myInfo.data) {
+      getBooks({
+        variables: { genre: myInfo.data.me.favoriteGenre }
+      })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myInfo.data])
+
+  // effect hook
+  useEffect(() => {
+    if (result.data) {
+      setRecommendedBooks(result.data.allBooks)
+    }
+  }, [result])
 
   if (!show) {
     return null
   }
 
-  if (me.loading) {
+  if (result.loading) {
     return <div>loading...</div>
   }
 
-  const favoriteGenre = me.data.me.favoriteGenre
+  // destructure favoriteGenre
+  const { favoriteGenre } = myInfo.data.me
 
   return (
     <div>
@@ -40,7 +60,7 @@ const Recommend = ({
             </th>
           </tr>
           {
-            books
+            recommendedBooks
               .filter(book => book.genres.join(' ').includes(favoriteGenre))
               .map(book => <Book key={book.id} book={book} />)
           }
