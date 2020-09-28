@@ -4,7 +4,8 @@ import { ALL_AUTHORS, ALL_BOOKS, ME, NEW_BOOK } from '../queries'
 
 const NewBook = ({
   show,
-  setError
+  setError,
+  updateCacheWith
 }) => {
   const [title, setTitle] = useState('')
   const [author, setAuhtor] = useState('')
@@ -15,20 +16,10 @@ const NewBook = ({
   const [newBook] = useMutation(NEW_BOOK, {
     refetchQueries: [{ query: ALL_AUTHORS }],
     update: (store, response) => {
-      const dataInStore = store.readQuery({ query: ALL_BOOKS })
       const newBook = response.data.addBook
 
       // update the all books data
-      store.writeQuery({
-        query: ALL_BOOKS,
-        data: {
-          ...dataInStore,
-          allBooks: [
-            ...dataInStore.allBooks,
-            newBook
-          ]
-        }
-      })
+      updateCacheWith(newBook)
 
       //  read favorite genre of logged in user
       const { favoriteGenre } = store

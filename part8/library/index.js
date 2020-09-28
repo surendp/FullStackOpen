@@ -1,13 +1,15 @@
 const {
   ApolloServer,
   gql,
-  UserInputError
+  UserInputError,
+  PubSub
 } = require('apollo-server')
 const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
 const Book = require('./models/Book')
 const Author = require('./models/Author')
 const User = require('./models/User')
+const pubsub = new PubSub()
 
 const JWT_SECRET = 's3cr3t'
 const MONGODB_URI = 'mongodb+srv://fullstack:halfstack@cluster0-ostce.mongodb.net/graphql?retryWrites=true'
@@ -34,6 +36,7 @@ const typeDefs = gql`
     name: String!
     bookCount: Int!
     id: ID!
+    bookOf: [Book!]!
     born: Int
   }
 
@@ -89,14 +92,17 @@ const typeDefs = gql`
       password: String!
     ): Token
   }
+
+  type Subscription {
+    bookAdded: Book!
+  }
 `
 
 // GraphQL Resolvers
 const resolvers = {
   Author: {
-    bookCount: async root => {      
-      const books = await Book.find({ author: root._id })
-      return books.length
+    bookCount: root => {      
+      return root.bookOf.length
     },
   },
 
@@ -118,7 +124,7 @@ const resolvers = {
       return books
     },
     allAuthors: (root, args) => {
-      return Author.find({})
+      return Author.find({}).populate('bookOf')
     },
     bookCount: async () => {      
       const books = await Book.find({})
@@ -153,14 +159,23 @@ const resolvers = {
         author
       })
 
-      // save the book to the database
       try {
+        // save the book to the database
         await book.save()
+
+        // add the book to the author's book list
+        author.bookOf = author.bookOf.concat(book._id)
+
+        // save the author to the database
+        await author.save()
       } catch (error) {
         throw new UserInputError(error.message, {
           invalidArgs: args
         })
       }
+      
+      // publish the newly added book to all the subscribers
+      pubsub.publish('BOOK_ADDED', { bookAdded: book })
 
       // return newly created book
       return book
@@ -221,6 +236,12 @@ const resolvers = {
       // create and return jwt token
       return { value: jwt.sign(userForToken, JWT_SECRET) }
     }
+  },
+  
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator(['BOOK_ADDED'])
+    },
   }
 }
 
@@ -250,6 +271,7 @@ const server = new ApolloServer({
 })
 
 // Start the server
-server.listen().then(({ url }) => {
+server.listen().then(({ url, subscriptionsUrl }) => {
   console.log(`Server ready at ${url}`)
+  console.log(`Subscriptions ready at ${subscriptionsUrl}`)
 })
