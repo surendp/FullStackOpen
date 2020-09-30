@@ -13,6 +13,11 @@ interface Inputs {
   exerciseHours: Array<number>;
 }
 
+interface WebExerciseInputs {
+  target: number;
+  daily_exercises: Array<number>;
+}
+
 type RatingValues = 1 | 2 | 3;
 
 // calculate average
@@ -25,7 +30,7 @@ const calculateAverage = (dailyExerciseHours: Array<number>): number => {
 
   // return the average
   return dailyExerciseHours.reduce(sumFn) / dailyExerciseHours.length;
-}
+};
 
 // calculate rating
 const calculateRating = (average: number, target: number): RatingValues => {
@@ -40,7 +45,7 @@ const calculateRating = (average: number, target: number): RatingValues => {
   }
 
   return 2;
-}
+};
 
 // rating description
 const calculateRatingDescription = (rating: RatingValues): string => {
@@ -59,26 +64,33 @@ const calculateRatingDescription = (rating: RatingValues): string => {
       break;      
   }
 
-  return description
-}
+  return description;
+};
 
 // number of training days attended
 const calculateTrainingDays = (dailyExerciseHours: Array<number>): number => {
   // callback function for filter method
-  const filterCallback = (hour: number) => hour > 0
+  const filterCallback = (hour: number) => hour > 0;
 
   // return the number of training days
-  return dailyExerciseHours.filter(filterCallback).length
-}
+  return dailyExerciseHours.filter(filterCallback).length;
+};
 
-// extract the cli arguments
-const getCliArgs = (args: Array<string>): Inputs => {
-  // throw error if the arguments are either less or more
-  if (args.length < 4) throw new Error('Not enough arguments');
+// check if the input is valid
+const validateInput = (target: number | string, dailyExerciseHours: Array<number | string>): Inputs => {
+  // throw error if any of the parameters is missing
+  if (!dailyExerciseHours || !target) {
+    throw new Error('parameters missing');
+  }
 
+  // throw error if the exercises param is not an array
+  if(!Array.isArray(dailyExerciseHours)) {
+    throw new Error('malformatted parameters');
+  }
+  
   // extract targetValue and exercise hours
-  const targetValue = Number(args[2]);
-  const exerciseHours = args
+  const targetValue = Number(target);
+  const exerciseHours = dailyExerciseHours
     .slice(3)
     .map(h => Number(h));
 
@@ -87,12 +99,25 @@ const getCliArgs = (args: Array<string>): Inputs => {
     return {
       targetValue,
       exerciseHours
-    }
+    };
   }
 
   // throw invalid input error
-  throw new Error('All inputs should be numbers')
-}
+  throw new Error('malformatted parameters');
+};
+
+// extract the cli arguments
+const getCliArgs = (args: Array<string>): Inputs => {
+  // throw error if the arguments are either less or more
+  if (args.length < 4) throw new Error('Not enough arguments');
+
+  // extract targetValue and exercise hours
+  const targetValue = Number(args[2]);
+  const exerciseHours = args.slice(3);
+
+  // return formatted data
+  return validateInput(targetValue, exerciseHours);
+};
 
 // exercise calculator 
 const exerciseCalculator = (dailyExerciseHours: Array<number>, target: number): Result => {
@@ -111,12 +136,18 @@ const exerciseCalculator = (dailyExerciseHours: Array<number>, target: number): 
     success,
     target,
     trainingDays,
-  }
-}
+  };
+};
 
 try {
-  const { targetValue, exerciseHours } = getCliArgs(process.argv)
-  console.log(exerciseCalculator(exerciseHours, targetValue))
+  const { targetValue, exerciseHours } = getCliArgs(process.argv);
+  console.log(exerciseCalculator(exerciseHours, targetValue));
 } catch (error) {
-  console.log(error.message)
+  console.log((error as Error).message);
 }
+
+export {
+  exerciseCalculator,
+  WebExerciseInputs,
+  validateInput
+};

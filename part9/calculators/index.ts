@@ -1,10 +1,17 @@
 import express from 'express';
 import { calculateBmi } from './bmiCalculator';
+import {
+  exerciseCalculator,
+  WebExerciseInputs,
+  validateInput
+} from './exerciseCalculator';
 const app = express();
+
+app.use(express.json());
 
 app.get('/hello', (_req, res) => {
   res.send('Hello Full Stack!');
-})
+});
 
 app.get('/bmi', (req, res) => {
   try {
@@ -33,14 +40,37 @@ app.get('/bmi', (req, res) => {
       weight,
       height,
       bmi
-    })
+    });
   } catch (error) {
     // send the error message
     res.status(400).json({
-      error: error.message,
-    })
+      error: (error as Error).message,
+    });
   }
-})
+});
+
+app.post('/exercise', (req, res) => {
+  try {
+    const dailyExercises = (req.body as WebExerciseInputs).daily_exercises;
+    const { target } = req.body as WebExerciseInputs;
+  
+    // validate the data
+    const {
+      targetValue,
+      exerciseHours
+    } = validateInput(target, dailyExercises);
+
+    // evaluate the data and generate result
+    const result = exerciseCalculator(exerciseHours, targetValue);
+
+    // send result for correctly formatted data
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({
+      error: (error as Error).message,
+    });
+  }
+});
 
 const PORT = 3000;
 
